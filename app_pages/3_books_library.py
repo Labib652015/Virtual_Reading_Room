@@ -2,11 +2,11 @@ import streamlit as st
 from database_connection.cloud_supabase import supabase
 from design_styles.custom_css import apply_custom_design
 
+
 def render_my_books():
     apply_custom_design()
     st.markdown('<h1 class="main-title">পাঠ্যবই ও গাইড লাইব্রেরি</h1>', unsafe_allow_html=True)
     st.markdown('<p class="sub-header">NCTB পাঠ্যবই ও রেফারেন্স বইসমূহের ডিজিটাল সংগ্রহশালা</p>', unsafe_allow_html=True)
-    
     class_options = {
         "ষষ্ঠ শ্রেণি": "class6",
         "সপ্তম শ্রেণি": "class7",

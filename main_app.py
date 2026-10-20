@@ -1,7 +1,19 @@
 import streamlit as st
 import importlib
+from supabase import create_client, Client
 
-# সংখ্যা দিয়ে শুরু হওয়া ফাইলগুলো নিরাপদে ইমপোর্ট করার জন্য importlib ব্যবহার করা হলো
+# =========================================================================
+# Supabase ক্লাউড ডেটাবেজ গ্লোবাল কানেকশন
+# =========================================================================
+SUPABASE_URL = "https://baxwgnlfsnwpekrlmhpw.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJheHdnbmxmc253cGVrcmxtaHB3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMTY0MDksImV4cCI6MjEwNzg5MjQwOX0.lxdaUNbyF4Pn0WCT2zIQz3ETyCVmEnXM3YkHsb4SLXQ"
+
+try:
+    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+except Exception as e:
+    supabase = None
+
+# পেজ মডিউল ইমপোর্ট
 login_page = importlib.import_module("app_pages.1_login_page")
 home_dashboard = importlib.import_module("app_pages.2_home_dashboard")
 books_library = importlib.import_module("app_pages.3_books_library")
@@ -16,7 +28,7 @@ render_notes = student_notes.render_notes
 render_exams = exam_routine.render_exams
 render_quiz_practice = quiz_practice.render_quiz_practice
 
-
+# স্ট্রীমলিট পেজ কনফিগারেশন
 st.set_page_config(
     layout="wide",
     page_icon="📚",
@@ -24,19 +36,33 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# =========================================================================
+# সেশন স্টেট (Session State) ইনিশিয়ালাইজেশন (ড্যাশবোর্ডের এরর দূর করার জন্য অপরিহার্য)
+# =========================================================================
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
+if "student_id" not in st.session_state:
+    st.session_state.student_id = ""
 if "student_name" not in st.session_state:
-    st.session_state.student_name = "লাবিব বিন লালন"
+    st.session_state.student_name = "শিক্ষার্থী"
 if "school_name" not in st.session_state:
     st.session_state.school_name = "শামসুল হক খান স্কুল অ্যান্ড কলেজ, ডেমরা, ঢাকা"
 if "class_name" not in st.session_state:
     st.session_state.class_name = "সপ্তম শ্রেণি"
+if "section" not in st.session_state:
+    st.session_state.section = "A"
 if "roll_number" not in st.session_state:
     st.session_state.roll_number = "১২০"
+if "group" not in st.session_state:
+    st.session_state.group = "বিজ্ঞান"
+if "academic_session" not in st.session_state:
+    st.session_state.academic_session = "2025-2026"
+if "phone" not in st.session_state:
+    st.session_state.phone = ""
 if "current_page" not in st.session_state:
     st.session_state.current_page = "Dashboard"
 
+# গেটকিপার লজিক
 if not st.session_state.authenticated:
     render_login_page()
 else:
@@ -54,19 +80,20 @@ else:
             ("✍️ Practice & Preparation", "Quiz & Practice"),
             ("📝 NoteBook", "Notes"),
             ("📅 Exams & Assignment", "Exam & Assignment")
-           
         ]
         
         for label, page_key in nav_options:
-            if st.button(label, use_container_width=True):
+            if st.button(label, use_container_width=True, key=f"nav_{page_key}"):
                 st.session_state.current_page = page_key
                 st.rerun()
                 
         st.markdown("---")
-        if st.button("🚪 Logout", use_container_width=True):
+        if st.button("🚪 Logout", use_container_width=True, key="logout_btn"):
             st.session_state.authenticated = False
+            st.session_state.student_id = ""
             st.rerun()
 
+    # পেজ রাউটিং হ্যান্ডলার
     page = st.session_state.current_page
     if page == "Dashboard":
         render_dashboard()
@@ -78,4 +105,3 @@ else:
         render_notes()
     elif page == "Exam & Assignment":
         render_exams()
-    
